@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>bitmap2font</title>
+  <meta name="description" content="Convert 8-bit computer bitmap fonts into vector fonts: UFO, TTF, WOFF and .glyphs.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 3 3%22%3E%3Cpath d=%22M0 0h1v1H0zM2 0h1v1H2zM1 1h1v1H1zM0 2h1v1H0zM2 2h1v1H2z%22 fill=%22%232f6fde%22/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="logo" aria-hidden="true"></span>bitmap2font</div>
+    <nav class="steps" aria-label="Steps">
+      <button class="step active" data-step="1"><span>1</span> Import &amp; map</button>
+      <button class="step" data-step="2" disabled><span>2</span> Vector &amp; export</button>
+    </nav>
+  </header>
+
+  <!-- STEP 1 ---------------------------------------------------------------->
+  <main id="step1" class="layout">
+    <aside class="sidebar">
+      <section class="panel">
+        <h2>Source data</h2>
+        <label class="drop" id="drop">
+          <input type="file" id="file" hidden>
+          <strong>Drop a font binary or image</strong>
+          <span>or click to choose: .bin, .rom, .64c, .fnt… or a font sheet .png, .gif, .bmp, .webp</span>
+        </label>
+        <div class="fileinfo" id="fileinfo">No data loaded.</div>
+        <details>
+          <summary>Paste a hex dump / C array instead</summary>
+          <textarea id="pasteText" rows="5" spellcheck="false" placeholder="0x3C, 0x66, 0x6E, 0x6E, 0x60, 0x62, 0x3C, 0x00, …"></textarea>
+          <div class="row">
+            <select id="pasteRadix"><option value="hex">Hex</option><option value="dec">Decimal</option></select>
+            <button id="pasteLoad" class="btn small">Load pasted bytes</button>
+          </div>
+        </details>
+        <button id="loadSample" class="link">Load the built-in demo font</button>
+      </section>
+
+      <section class="panel">
+        <h2>Glyph format</h2>
+        <div class="grid2">
+          <label>Glyph width (px)<input id="dWidth" type="number" min="1" max="64" value="8"></label>
+          <label>Glyph height (px)<input id="dHeight" type="number" min="1" max="64" value="8"></label>
+          <label class="bin-only">Start offset<input id="dOffset" type="text" value="0" title="Bytes to skip. Decimal, 0x.. or $.."></label>
+          <label>Glyph count<input id="dCount" type="number" min="0" placeholder="all"></label>
+          <label class="bin-only">Bytes / glyph<input id="dStride" type="number" min="0" placeholder="auto"></label>
+          <label class="bin-only">Bit order
+            <select id="dBitOrder"><option value="msb">MSB first</option><option value="lsb">LSB first</option></select>
+          </label>
+          <label class="bin-only">Byte layout
+            <select id="dLayout"><option value="rows">Rows (horizontal)</option><option value="cols">Columns (vertical)</option></select>
+          </label>
+          <label class="bin-only">Packing
+            <select id="dPacking"><option value="padded">Byte-aligned</option><option value="stream">Bitstream</option></select>
+          </label>
+          <label class="img-only" title="Image pixels per font pixel, for upscaled sheets">Pixel scale<input id="iScale" type="number" min="1" max="64" value="1"></label>
+          <label class="img-only" title="Cells per row (0 = as many as fit)">Columns<input id="iCols" type="number" min="0" placeholder="auto"></label>
+          <label class="img-only" title="Left margin, in image pixels">Margin left<input id="iOffX" type="number" min="0" value="0"></label>
+          <label class="img-only" title="Top margin, in image pixels">Margin top<input id="iOffY" type="number" min="0" value="0"></label>
+          <label class="img-only" title="Horizontal gap between cells, in image pixels">Gutter X<input id="iGapX" type="number" min="0" value="0"></label>
+          <label class="img-only" title="Vertical gap between cells, in image pixels">Gutter Y<input id="iGapY" type="number" min="0" value="0"></label>
+          <label class="img-only">Ink is
+            <select id="iInk"><option value="auto">Auto-detect</option><option value="dark">Dark on light</option><option value="light">Light on dark</option><option value="opaque">Opaque on transparent</option></select>
+          </label>
+          <label class="img-only">Threshold<input id="iThresh" type="range" min="0.05" max="0.95" step="0.05" value="0.5"></label>
+        </div>
+        <button id="iRedetect" class="link img-only">Re-detect sheet layout</button>
+        <label class="check"><input id="dInvert" type="checkbox"> Invert (swap ink / paper)</label>
+        <p class="hint" id="decodeInfo"></p>
+      </section>
+
+      <section class="panel">
+        <h2>Character mapping</h2>
+        <label>Preset<select id="mPreset"></select></label>
+        <label id="mFirstWrap">Code of glyph #0<input id="mFirst" type="text" value="0x20" title="Most 8-bit fonts start at space (0x20). Decimal, 0x.. or $.."></label>
+        <label class="check"><input id="mPua" type="checkbox"> Keep unmapped glyphs in the Private Use Area (U+E000+)</label>
+        <details>
+          <summary>Assign a run of characters</summary>
+          <label>Characters<input id="bulkText" type="text" spellcheck="false" placeholder="ABCDEFG…"></label>
+          <div class="row">
+            <label class="inline">from glyph #<input id="bulkStart" type="number" min="0" value="0"></label>
+            <button id="bulkApply" class="btn small">Assign</button>
+          </div>
+        </details>
+        <button id="mReset" class="link">Discard manual edits</button>
+      </section>
+
+      <div class="sticky-cta">
+        <button id="toStep2" class="btn primary" disabled>Continue to vector preview →</button>
+      </div>
+    </aside>
+
+    <section class="content">
+      <div class="toolbar">
+        <div class="stats" id="mapStats"></div>
+        <label class="inline">Zoom <input id="zoom" type="range" min="2" max="10" value="5"></label>
+        <label class="check inline"><input id="hideUnmapped" type="checkbox"> Hide unmapped</label>
+      </div>
+      <details class="sheet img-only" id="sheetWrap" open>
+        <summary>Source image <span class="hint" id="sheetInfo"></span></summary>
+        <div class="sheet-scroll"><canvas id="sheetCanvas"></canvas></div>
+      </details>
+      <p class="hint">Type the character each glyph represents, or <code>U+XXXX</code>. Leave a field empty to skip that glyph.</p>
+      <div id="glyphGrid" class="glyph-grid">
+        <div class="empty">Load some font data to see its glyphs here.</div>
+      </div>
+    </section>
+  </main>
+
+  <!-- STEP 2 ---------------------------------------------------------------->
+  <main id="step2" class="layout" hidden>
+    <aside class="sidebar">
+      <section class="panel">
+        <h2>Font</h2>
+        <label>Family name<input id="fFamily" type="text" value="Bitmap Font"></label>
+        <label>Style<input id="fStyle" type="text" value="Regular"></label>
+      </section>
+      <section class="panel">
+        <h2>Metrics</h2>
+        <div class="grid2">
+          <label>Line height (px)<input id="fLine" type="number" step="0.5" min="1"></label>
+          <label>Letter spacing (px)<input id="fAdvance" type="number" step="0.5" min="0" title="Advance width per character, in pixels"></label>
+          <label>Descender rows<input id="fDescent" type="number" min="0" title="Pixel rows below the baseline"></label>
+          <label>Pixel aspect (w÷h)<input id="fAspect" type="number" step="0.01" min="0.1" max="10" value="1"></label>
+        </div>
+        <label>Aspect preset
+          <select id="fAspectPreset">
+            <option value="">Custom</option>
+            <option value="1">Square pixels (1 : 1)</option>
+            <option value="0.9365">Commodore 64 · PAL (0.9365)</option>
+            <option value="0.75">Commodore 64 · NTSC (0.75)</option>
+            <option value="2">Double-wide (2 : 1)</option>
+            <option value="0.5">Double-tall (1 : 2)</option>
+          </select>
+        </label>
+        <label class="check"><input id="fProp" type="checkbox"> Proportional spacing (trim to ink)</label>
+        <label id="fGapWrap" hidden>Gap between letters (px)<input id="fGap" type="number" step="0.5" min="0" value="1"></label>
+        <p class="hint" id="metricsInfo"></p>
+      </section>
+      <section class="panel">
+        <h2>Export</h2>
+        <div class="exports">
+          <button class="btn primary" data-export="ufo">UFO source <small>.ufo.zip</small></button>
+          <button class="btn" data-export="ttf">TrueType <small>.ttf</small></button>
+          <button class="btn" data-export="woff">Web font <small>.woff</small></button>
+          <button class="btn" data-export="glyphs">Glyphs 3 <small>.glyphs</small></button>
+        </div>
+        <ul class="warnings" id="warnings"></ul>
+      </section>
+    </aside>
+
+    <section class="content">
+      <div class="toolbar">
+        <button id="back" class="btn small">← Back to mapping</button>
+        <label class="inline">Preview size <input id="pScale" type="range" min="1" max="8" value="4"></label>
+        <label class="check inline"><input id="pGuides" type="checkbox" checked> Guides</label>
+      </div>
+      <textarea id="sampleText" class="sample-input" rows="3" spellcheck="false">THE QUICK BROWN FOX
+jumps over the lazy dog.
+0123456789 !?#$%&amp;@</textarea>
+      <h3 class="label">Vector outlines (SVG)</h3>
+      <div class="svg-wrap" id="svgPreview"></div>
+      <h3 class="label">Generated font, rendered by your browser</h3>
+      <div class="font-test" id="fontTest"></div>
+      <h3 class="label">Glyphs <span id="glyphCount"></span></h3>
+      <div class="vector-grid" id="vectorGrid"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
