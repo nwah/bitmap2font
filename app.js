@@ -128,17 +128,19 @@ function drawSheet() {
   const tmp = new OffscreenCanvas(img.width, img.height);
   tmp.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(img.data), img.width, img.height), 0, 0);
   ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, cv.width, cv.height);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, cv.width, cv.height);
   ctx.drawImage(tmp, 0, 0, cv.width, cv.height);
+  // Cell grid drawn in XOR, like a QuickDraw selection: it inverts whatever lies under it.
   const o = imageOptions();
-  const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#2f6fde';
-  ctx.strokeStyle = accent; ctx.globalAlpha = 0.8; ctx.lineWidth = 1;
+  ctx.globalCompositeOperation = 'difference';
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
   const { w, h, stepX, stepY } = bm.cell;
   for (let i = 0; i < bm.glyphs.length; i++) {
     const x = o.offsetX + (i % bm.columns) * stepX, y = o.offsetY + Math.floor(i / bm.columns) * stepY;
     ctx.strokeRect(x * zoom + 0.5, y * zoom + 0.5, w * zoom - 1, h * zoom - 1);
   }
-  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
   $('sheetInfo').textContent = `· ${img.width}×${img.height}px, ${bm.columns}×${bm.rows} cells`;
 }
 
@@ -217,7 +219,7 @@ function renderGlyphGrid() {
     return;
   }
   const zoom = +$('zoom').value;
-  grid.style.setProperty('--card', Math.max(70, bm.width * zoom + 14) + 'px');
+  grid.style.setProperty('--card', Math.max(64, bm.width * zoom + 12) + 'px');
   const frag = document.createDocumentFragment();
   const ink = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim() || '#000';
   bm.glyphs.forEach((bits, i) => {

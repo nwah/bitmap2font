@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>bitmap2font</title>
   <meta name="description" content="Convert 8-bit computer bitmap fonts into vector fonts: UFO, TTF, WOFF and .glyphs.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 3 3%22%3E%3Cpath d=%22M0 0h1v1H0zM2 0h1v1H2zM1 1h1v1H1zM0 2h1v1H0zM2 2h1v1H2z%22 fill=%22%232f6fde%22/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 3 3%22%3E%3Cpath d=%22M0 0h1v1H0zM2 0h1v1H2zM1 1h1v1H1zM0 2h1v1H0zM2 2h1v1H2z%22 fill=%22%23000%22/%3E%3C/svg%3E">
+  <link rel="preload" href="fonts/lakeshore.woff" as="font" type="font/woff" crossorigin>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -21,7 +22,7 @@
   <main id="step1" class="layout">
     <aside class="sidebar">
       <section class="panel">
-        <h2>Source data</h2>
+        <h2><span>Source data</span></h2>
         <label class="drop" id="drop">
           <input type="file" id="file" hidden>
           <strong>Drop a font binary or image</strong>
@@ -40,7 +41,7 @@
       </section>
 
       <section class="panel">
-        <h2>Glyph format</h2>
+        <h2><span>Glyph format</span></h2>
         <div class="grid2">
           <label>Glyph width (px)<input id="dWidth" type="number" min="1" max="64" value="8"></label>
           <label>Glyph height (px)<input id="dHeight" type="number" min="1" max="64" value="8"></label>
@@ -73,7 +74,7 @@
       </section>
 
       <section class="panel">
-        <h2>Character mapping</h2>
+        <h2><span>Character mapping</span></h2>
         <label>Preset<select id="mPreset"></select></label>
         <label id="mFirstWrap">Code of glyph #0<input id="mFirst" type="text" value="0x20" title="Most 8-bit fonts start at space (0x20). Decimal, 0x.. or $.."></label>
         <label class="check"><input id="mPua" type="checkbox"> Keep unmapped glyphs in the Private Use Area (U+E000+)</label>
@@ -93,7 +94,8 @@
       </div>
     </aside>
 
-    <section class="content">
+    <section class="content window">
+      <h2><span>Glyphs</span></h2>
       <div class="toolbar">
         <div class="stats" id="mapStats"></div>
         <label class="inline">Zoom <input id="zoom" type="range" min="2" max="10" value="5"></label>
@@ -114,12 +116,12 @@
   <main id="step2" class="layout" hidden>
     <aside class="sidebar">
       <section class="panel">
-        <h2>Font</h2>
+        <h2><span>Font</span></h2>
         <label>Family name<input id="fFamily" type="text" value="Bitmap Font"></label>
         <label>Style<input id="fStyle" type="text" value="Regular"></label>
       </section>
       <section class="panel">
-        <h2>Metrics</h2>
+        <h2><span>Metrics</span></h2>
         <div class="grid2">
           <label>Line height (px)<input id="fLine" type="number" step="0.5" min="1"></label>
           <label>Letter spacing (px)<input id="fAdvance" type="number" step="0.5" min="0" title="Advance width per character, in pixels"></label>
@@ -141,7 +143,7 @@
         <p class="hint" id="metricsInfo"></p>
       </section>
       <section class="panel">
-        <h2>Export</h2>
+        <h2><span>Export</span></h2>
         <div class="exports">
           <button class="btn primary" data-export="ufo">UFO source <small>.ufo.zip</small></button>
           <button class="btn" data-export="ttf">TrueType <small>.ttf</small></button>
@@ -152,7 +154,8 @@
       </section>
     </aside>
 
-    <section class="content">
+    <section class="content window">
+      <h2><span>Preview</span></h2>
       <div class="toolbar">
         <button id="back" class="btn small">← Back to mapping</button>
         <label class="inline">Preview size <input id="pScale" type="range" min="1" max="8" value="4"></label>

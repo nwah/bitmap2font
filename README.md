@@ -20,6 +20,12 @@ npm run serve        # python3 -m http.server 8000, then open http://localhost:8
 1. **Import & map**: drop a binary, a font sheet image (PNG, GIF, BMP, WebP…), or paste a hex dump / C array. Set the glyph width and height, a start offset (e.g. `2` for C64 `.64c` files with a load address), bit order, row or column byte layout, and byte-aligned or bitstream packing. For images, the tool auto-detects the pixel scale of upscaled sheets, the glyph size and columns, and the ink colour (dark on light, light on dark, or opaque on transparent). Margins and gutters between cells can be set by hand, and a grid overlay on the source image shows the alignment. Every decoded glyph appears as a pixel preview with an editable character field. By default the data is assumed to start at a space (0x20), followed by `!`, `"`, `#` and so on. Change “Code of glyph #0” if yours starts elsewhere. Presets cover ASCII, Latin-1, CP437, C64 screen codes (both sets), Atari internal codes and the ZX Spectrum ROM. You can type any character or `U+XXXX`, or assign a whole run of characters at once.
 2. **Vector & export**: an SVG preview of your sample text and every glyph, plus the same text rendered by your browser from the generated TTF. Adjust the line height and letter spacing (they default to the glyph's pixel height and width), the descender rows (baseline), the pixel aspect ratio for non-square-pixel machines, and optional proportional spacing. Then export.
 
+The interface is styled after System 6. Its two typefaces are produced by bitmap2font itself: **Lakeshore**, an original 12px UI font drawn as text in `fonts/src/lakeshore.txt`, and **Sampler Mono**, the built-in 5×7 demo font (plus a few symbols). `npm run fonts` rebuilds `fonts/*.woff` after editing the pixel source.
+
+### Deploying to GitHub Pages
+
+`.github/workflows/pages.yml` runs the tests, rebuilds the UI fonts and publishes `index.html`, `app.js`, `styles.css`, `core/` and `fonts/*.woff` on every push to `main`. Enable it once under the repo's **Settings → Pages → Source: GitHub Actions**.
+
 ## Node / offline use
 
 The conversion code in `core/` is pure JS (ES modules, Node ≥ 18) and is shared by the web UI and the CLI.

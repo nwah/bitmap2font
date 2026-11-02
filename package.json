@@ -6,6 +6,6 @@
   "main": "core/index.js",
   "exports": { ".": "./core/index.js" },
   "bin": { "bitmap2font": "cli/bitmap2font.mjs" },
-  "scripts": { "serve": "python3 -m http.server 8000", "test": "node test/smoke.mjs" },
+  "scripts": { "serve": "python3 -m http.server 8000", "test": "node test/smoke.mjs", "fonts": "node fonts/build.mjs" },
   "license": "MIT"
 }
